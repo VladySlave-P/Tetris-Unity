@@ -9,6 +9,7 @@ public class TetrisBlock : MonoBehaviour
     public float fallTime = 0.8f;
     public static int height = 20;
     public static int width = 11;
+    private static Transform[,] grid = new Transform[width, height];
     // Start is called before the first frame update
     void Start()
     {
@@ -27,6 +28,7 @@ public class TetrisBlock : MonoBehaviour
                 transform.position -= new Vector3(-1, 0, 0);
             }
         }
+        
         else if(Input.GetKeyDown(KeyCode.RightArrow))
         {
             transform.position += new Vector3(1, 0, 0);
@@ -46,12 +48,13 @@ public class TetrisBlock : MonoBehaviour
             }
         }
 
-        if (Time.time - previousTime > (Input.GetKeyDown(KeyCode.DownArrow) ? fallTime/10 : fallTime))
+        if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime/10 : fallTime))
         {
             transform.position += new Vector3(0, -1, 0);
             if (!ValidMove())
             {
                 transform.position -= new Vector3(0, -1, 0);
+                AddToGrid();
                 this.enabled = false;
                 FindObjectOfType<SpawnTetromino>().NewTetromino();
             }
@@ -59,6 +62,17 @@ public class TetrisBlock : MonoBehaviour
         }
     }
 
+
+    void AddToGrid()
+    {
+        foreach (Transform children in transform)
+        {
+            int roundedX = Mathf.RoundToInt(children.transform.position.x);
+            int roundedY = Mathf.RoundToInt(children.transform.position.y);
+
+            grid[roundedX, roundedY] = children;
+        }
+    }
     bool ValidMove()
     {
         foreach (Transform children in transform)
@@ -67,6 +81,11 @@ public class TetrisBlock : MonoBehaviour
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
 
             if (roundedX<0 || roundedX>=width || roundedY <0 || roundedX >= height)
+            {
+                return false;
+            }
+
+            if (grid[roundedX, roundedY] != null)
             {
                 return false;
             }
